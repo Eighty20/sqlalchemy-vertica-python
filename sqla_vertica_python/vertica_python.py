@@ -1,7 +1,25 @@
 import re
 from sqlalchemy import types as sqltypes
-from sqlalchemy.dialects.postgresql.base import PGDialect
+from sqlalchemy.dialects.postgresql.base import PGDialect, PGDDLCompiler
 from sqlalchemy.engine import reflection
+
+class VerticaDDLCompiler(PGDDLCompiler):
+    
+    def get_column_specification(self, column, **kwargs):
+        colspec = self.preparer.format_column(column)
+        impl_type = column.type.dialect_impl(self.dialect)
+        if column.primary_key and \
+            column is column.table._autoincrement_column:            
+            colspec += " AUTO_INCREMENT"
+        else:
+            colspec += " " + self.dialect.type_compiler.process(column.type)
+            default = self.get_column_default_string(column)
+            if default is not None:
+                colspec += " DEFAULT " + default
+
+        if not column.nullable:
+            colspec += " NOT NULL"
+        return colspec
 
 
 class VerticaDialect(PGDialect):
@@ -10,6 +28,8 @@ class VerticaDialect(PGDialect):
     name = 'vertica'
 
     driver = 'vertica_python'
+
+    ddl_compiler = VerticaDDLCompiler
 
     ischema_names = {
         'BINARY': sqltypes.BLOB,
@@ -46,6 +66,7 @@ class VerticaDialect(PGDialect):
         'BIGINT': sqltypes.INTEGER,
         'SMALLINT': sqltypes.INTEGER,
         'TINYINT': sqltypes.INTEGER,
+        'SERIAL': sqltypes.INTEGER,
 
         'NUMERIC': sqltypes.NUMERIC,
         'DECIMAL': sqltypes.NUMERIC,
@@ -176,6 +197,9 @@ class VerticaDialect(PGDialect):
         for row in connection.execute(s):
             name = row.column_name
             dtype = row.data_type.upper()
+            print('*********************')
+            print(dtype)
+            print('*********************')
             if '(' in dtype:
                 dtype = dtype.split('(')[0]
             coltype = self.ischema_names[dtype]
