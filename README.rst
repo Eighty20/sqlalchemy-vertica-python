@@ -13,10 +13,6 @@ This module implements a Vertica dialect for SQLAlchemy using `vertica-python <h
 Installation
 ------------
 
-From PyPI: ::
-
-     pip install sqlalchemy-vertica-python
-
 From git: ::
 
      git clone https://github.com/LocusEnergy/vertica-sqlalchemy 
