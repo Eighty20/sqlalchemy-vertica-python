@@ -15,6 +15,6 @@ Installation
 
 From git: ::
 
-     https://github.com/Eighty20/sqlalchemy-vertica-python
-     cd vertica-sqlalchemy
+     git clone https://github.com/Eighty20/sqlalchemy-vertica-python
+     cd sqlalchemy-vertica-python
      python setup.py install
